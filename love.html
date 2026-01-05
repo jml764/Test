@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You ❤️</title>
+    <style>
+        /* --- 1. GAYA UMUM --- */
+        body {
+            background-color: #000; /* Latar hitam pekat */
+            color: white;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* --- 2. START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            z-index: 100;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            animation: kedip 2s infinite;
+        }
+
+        button {
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            background: #ff1493;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px #ff1493;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- 3. LOADING SCREEN --- */
+        #loading {
+            position: absolute;
+            z-index: 90;
+            display: none; /* Disembunyikan awal */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            width: 100%;
+            height: 100%;
+        }
+
+        .loader {
+            border: 5px solid #333;
+            border-top: 5px solid #ff1493;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        /* --- 4. CANVAS ANIMASI (UTAMA) --- */
+        canvas {
+            display: block;
+            opacity: 0; /* Muncul pelan-pelan nanti */
+            transition: opacity 2s ease;
+        }
+
+        /* Animasi Tambahan */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes kedip { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Utilitas untuk menyembunyikan elemen */
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" loop>
+        <source src="https://raw.githubusercontent.com/Sjibidi/Duhh/main/JVKE%20-%20her%20(official%20lyric%20video)%20(2).mp3" type="audio/mp3">
+    </audio>
+
+    <div id="start-screen">
+        <h2>｡◕‿◕｡🌹 Untuk Kamu</h2>
+        <button id="continue-btn">Buka Hati</button>
+    </div>
+
+    <div id="loading">
+        <div class="loader"></div>
+        <span>Memuat perasaanku...</span>
+    </div>
+
+    <canvas id="canvasLove"></canvas>
+
+    <script>
+        // --- BAGIAN KONTROL TAMPILAN (Flow Website) ---
+        const startScreen = document.getElementById('start-screen');
+        const loadingScreen = document.getElementById('loading');
+        const canvas = document.getElementById('canvasLove');
+        const bgm = document.getElementById('bgm');
+        const continueBtn = document.getElementById('continue-btn');
+
+        continueBtn.addEventListener('click', () => {
+            // 1. Putar Musik
+            bgm.play().catch(error => {
+                console.log("Autoplay dicegah browser, user harus interaksi dulu.");
+            });
+
+            // 2. Hilangkan Start Screen
+            startScreen.classList.add('hidden');
+
+            // 3. Tampilkan Loading
+            loadingScreen.style.display = 'flex';
+
+            // 4. Tunggu 3 detik (Pura-pura loading), lalu masuk ke animasi utama
+            setTimeout(() => {
+                loadingScreen.style.display = 'none'; // Hapus loading
+                canvas.style.opacity = 1; // Munculkan canvas
+                initAnimation(); // Jalankan animasi partikel
+            }, 3000);
+        });
+
+
+        // --- BAGIAN ANIMASI PARTIKEL (Ultimate Pulse + Flowing) ---
+        // (Ini kode yang tadi, dibungkus dalam fungsi initAnimation)
+        
+        const ctx = canvas.getContext("2d");
+        let width, height;
+        let particles = [];
+        let time = 0;
+        
+        // Konfigurasi Animasi
+        const textToUse = "I LOVE YOU "; 
+        const particleCount = 350; // Jumlah partikel
+        const baseSize = 4;        // Ukuran Hati (Kecil/Mungil)
+        const flowSpeed = 0.005;   // Kecepatan jalan tulisan
+        const beatSpeed = 0.04;    // Kecepatan detak jantung
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+        }
+        window.addEventListener('resize', resize);
+        
+        function initAnimation() {
+            resize();
+            createParticles();
+            animate();
+        }
+
+        function createParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                let t = (Math.PI * 2 * i) / particleCount;
+                
+                // Arah acak untuk efek pecah
+                let dirX = (Math.random() - 0.5) * 2;
+                let dirY = (Math.random() - 0.5) * 2;
+
+                particles.push({
+                    t: t,
+                    char: textToUse[i % textToUse.length],
+                    dirX: dirX,
+                    dirY: dirY
+                });
+            }
+        }
+
+        function animate() {
+            // Membersihkan layar dengan efek jejak
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)"; 
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const cy = height / 2;
+
+            ctx.fillStyle = "#ff1493"; // Warna Pink Neon
+
+            // Update Waktu
+            time += beatSpeed;
+            
+            // Logika Detak Jantung (Pulse)
+            let beat = Math.pow(Math.sin(time), 5); 
+            if (beat < 0) beat = 0;
+            let expansion = beat * 50; // Kekuatan ledakan
+
+            particles.forEach(p => {
+                // 1. Gerakkan tulisan di rel (Flowing)
+                p.t -= flowSpeed; 
+
+                // 2. Hitung posisi dasar hati (Matematika)
+                let t = p.t;
+                let x = 16 * Math.pow(Math.sin(t), 3);
+                let y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+
+                // Skala dasar
+                let currentX = x * baseSize;
+                let currentY = y * baseSize;
+
+                // 3. Efek Mecah (Explosion)
+                // Posisi akhir = Posisi Dasar + Efek Detak + Random Scatter
+                let ledakanX = currentX + (currentX * beat * 1.5) + (p.dirX * expansion);
+                let ledakanY = currentY + (currentY * beat * 1.5) + (p.dirY * expansion);
+
+                // Ukuran font dinamis (Membesar saat berdetak)
+                let fontSize = 10 + (beat * 5); 
+                ctx.font = `bold ${fontSize}px monospace`;
+
+                // Gambar Teks
+                ctx.fillText(p.char, cx + ledakanX, cy + ledakanY);
+            });
+
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
